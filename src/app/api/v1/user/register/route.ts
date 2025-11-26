@@ -4,10 +4,10 @@ import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const { name, email, dateOfJoining, phoneNumber, role, password } =
+  const { name, email, phoneNumber, role, password } =
     await request.json();
 
-  if (!name || !email || !dateOfJoining || !phoneNumber || !role || !password) {
+  if (!name || !email || !phoneNumber || !role || !password) {
     return NextResponse.json(
       {
         status: false,
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const newUser = await User.create({
       name,
       email,
-      dateOfJoining,
+      // dateOfJoining,
       phoneNumber,
       role,
       password : hashedPassword

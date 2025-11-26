@@ -39,6 +39,13 @@ export async function POST(request: NextRequest) {
 
   const userId = await getDataToken(request)
 
+  if(!userId){
+    return NextResponse.json({
+      status: false,
+      message: "Unauthorized Request"
+    }, { status: 401 })
+  }
+
 //   const {searchParams} = new URL(request.url)
 //   const userId = searchParams.get("id")
 

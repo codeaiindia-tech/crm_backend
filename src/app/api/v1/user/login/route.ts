@@ -61,7 +61,9 @@ export async function POST(request: NextRequest) {
         message: "User logged in successfully"
     }, { status: 200 } )
 
-    return response.cookies.set("token", token)
+    response.cookies.set("token", token)
+
+    return response;
 
   } catch (error: any) {
     return NextResponse.json(
