@@ -1,36 +1,42 @@
-import { getDataToken } from "@/utils/getDataToken";
 import { dbConnect } from "@/db/dbConnect";
 import Call from "@/models/call.models";
+import { getDataToken } from "@/utils/getDataToken";
 import { NextRequest, NextResponse } from "next/server";
 
-// route for INCOMING CALLS ONLY
+
 export async function GET( request : NextRequest ){
-    
+
     const userId = await getDataToken(request)
 
     if(!userId){
         return NextResponse.json({
             status: false,
-            message: "Unauthorized request"
-        }, { status: 401 })
+            message: "Unauthorized Request"
+        }, { status: 400 })
     }
 
     try {
+        
         await dbConnect();
 
-        const allIncomingCalls = await Call.find({ callType: "INCOMING" }).sort({ createdAt: -1 })
+        const missedIncomingCall = await Call.find( 
+            {
+                callType: "INCOMING",
+                callStatus: "MISSED"
+            }
+         ).sort({ createdAt: -1 })
 
-        if(!allIncomingCalls){
+         if(!missedIncomingCall){
             return NextResponse.json({
                 status: false,
-                message: "Unable to fetch INCOMING CALLS"
-            }, { status: 400 })
-        }
+                message: "Unable to fetch Missed Incoming Calls"
+            }, { status: 402 })
+         }
 
         return NextResponse.json({
             status: true,
-            message: "Incoming calls fetched successfully",
-            data: allIncomingCalls 
+            message: "Missed Incoming Calls fetched successfully",
+            data: missedIncomingCall
         }, { status: 200 })
 
     } catch (error:any) {

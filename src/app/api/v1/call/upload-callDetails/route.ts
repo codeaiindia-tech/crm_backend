@@ -71,7 +71,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
         status: true,
-        message: "Call details uploaded successfully"
+        message: "Call details uploaded successfully",
+        data: newLeadDetail
     }, { status: 200 })
     
 

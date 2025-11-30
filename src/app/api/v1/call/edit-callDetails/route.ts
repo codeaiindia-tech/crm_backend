@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       {
         status: true,
         message: "Lead details updated successfully",
-        lead: updatedLead,
+        data: updatedLead,
       },
       { status: 200 }
     );
