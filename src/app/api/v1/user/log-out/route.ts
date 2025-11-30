@@ -1,4 +1,4 @@
-import { getDataToken } from "@/app/utils/getDataToken";
+import { getDataToken } from "@/utils/getDataToken";
 import { dbConnect } from "@/db/dbConnect";
 import { NextRequest, NextResponse } from "next/server";
 

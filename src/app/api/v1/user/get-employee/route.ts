@@ -1,4 +1,4 @@
-import { getDataToken } from "@/app/utils/getDataToken"
+import { getDataToken } from "@/utils/getDataToken"
 import { dbConnect } from "@/db/dbConnect"
 import User from "@/models/user.models"
 import { NextRequest, NextResponse } from "next/server"
