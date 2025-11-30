@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           status: false,
-          message: "No lead submitted by the user",
+          message: "No such lead exists",
         },
         { status: 401 }
       );
