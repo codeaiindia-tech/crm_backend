@@ -1,9 +1,23 @@
 import { dbConnect } from "@/db/dbConnect";
+import { Admin } from "@/models/admin.models";
 import User from "@/models/employee.models";
+import { getDataToken } from "@/utils/getDataToken";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
+  const userId = await getDataToken(request);
+
+  if (!userId) {
+    return NextResponse.json(
+      {
+        status: false,
+        message: "Unauthorized Access",
+      },
+      { status: 401 }
+    );
+  }
+
   const { name, email, phoneNumber, dateOfBirth, password, confirmPassword } =
     await request.json();
 
@@ -59,19 +73,42 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
     });
 
-    if(!newEmployee){
+    // await Admin.employeesCreated.push(newEmployee)
+
+    if (!newEmployee) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Error while registering the user",
+        },
+        { status: 400 }
+      );
+    }
+
+    const adminUpdated = await Admin.findByIdAndUpdate(userId, 
+        {
+            $push: [ { employeesCreated: newEmployee._id } ]
+        },
+        {
+            new: true
+        }
+    );
+
+    if(!adminUpdated){
         return NextResponse.json({
             status: false,
-            message: "Error while registering the user"
+            message: "Admin error while pushing the new employee"
         }, { status: 400 })
     }
 
-    return NextResponse.json({
+    return NextResponse.json(
+      {
         status: false,
         message: "Employee registered successfully",
-        data: newEmployee
-    }, { status: 200 })
-
+        data: newEmployee,
+      },
+      { status: 200 }
+    );
   } catch (error: any) {
     return NextResponse.json(
       {
