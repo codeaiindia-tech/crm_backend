@@ -1,7 +1,7 @@
 import { getDataToken } from "@/utils/getDataToken";
 import { dbConnect } from "@/db/dbConnect";
 import Call from "@/models/call.models";
-import User from "@/models/user.models";
+import User from "@/models/employee.models";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {

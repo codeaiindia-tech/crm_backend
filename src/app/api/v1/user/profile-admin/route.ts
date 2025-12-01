@@ -1,38 +1,40 @@
-import { getDataToken } from "@/utils/getDataToken"
-import { dbConnect } from "@/db/dbConnect"
-import User from "@/models/employee.models"
-import { NextRequest, NextResponse } from "next/server"
+import { dbConnect } from "@/db/dbConnect";
+import User from "@/models/employee.models";
+import { getDataToken } from "@/utils/getDataToken";
+import { NextRequest, NextResponse } from "next/server";
 
 
-export async function GET( request : NextRequest ){
+
+export async function GET(request:NextRequest){
+
     const userId = await getDataToken(request)
 
     if(!userId){
         return NextResponse.json({
             status: false,
-            message: "Unauthorized access"
-        }, { status: 401 })
+            message: "Unauthorized Access"
+        }, { status: 400 })
     }
 
     try {
-
+        
         await dbConnect();
 
-        const user = await User.find().sort({ createdAt: -1 });
+        const adminProfile = await User.findById(userId)
 
-        if(!user){
+        if(!adminProfile){
             return NextResponse.json({
                 status: false,
-                message: "unable to fetch",
+                message: "Unable to fetch the Admin Profile"
             }, { status: 400 })
         }
 
         return NextResponse.json({
             status: true,
-            message: "All employees fetched successfully",
-            data: user
+            message: "Admin profile fetched successfully",
+            data: adminProfile
         }, { status: 200 })
-        
+
     } catch (error:any) {
         return NextResponse.json({
             status: false,

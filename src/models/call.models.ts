@@ -14,29 +14,29 @@ export const callSchema = new mongoose.Schema<ICall>({
     userId: {
         type: mongoose.Types.ObjectId,
         ref: "User",
-        require: true
+        required: true
     },
     leadName: {
         type: String,
-        require: true
+        required: true
     },
     leadPhoneNumber: {
         type: String,
-        require: true
+        required: true
     },
     callType: {
         type: String,
         enum: [ "INCOMING", "OUTGOING" ],
-        require: true
+        required: true
     },
     callStatus: {
         type: String,
         enum: [ "CONNECTED", "REJECTED", "MISSED" ],
-        require: true
+        required: true
     },
     interested: {
         type: Boolean,
-        require: true
+        required: true
     },
     notes: {
         type: String,

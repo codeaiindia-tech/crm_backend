@@ -1,5 +1,5 @@
 import { dbConnect } from "@/db/dbConnect";
-import User from "@/models/user.models";
+import User from "@/models/employee.models";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 

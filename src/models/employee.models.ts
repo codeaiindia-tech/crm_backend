@@ -15,15 +15,16 @@ const userSchema = new mongoose.Schema<IUser>(
   {
     name: {
       type: String,
-      require: true,
+      required: true,
+      trim: true
     },
     email: {
       type: String,
-      require: true,
+      required: true,
     },
     phoneNumber: {
       type: String,
-      require: true,
+      required: true,
     },
     dateOfJoining: {
       type: Date,
@@ -31,14 +32,15 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["Employee", "Admin"],
-      require: true,
+      default: "Employee"
+      // enum: ["Employee", "Admin"],
+      // require: true,
     },
     password: {
       type: String,
-      require: true,
+      required: true,
     },
-    callDetails: [ callSchema ]
+    // callDetails: [ callSchema ]
   },
   { timestamps: true }
 );
