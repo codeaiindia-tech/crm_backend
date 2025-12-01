@@ -4,7 +4,8 @@ export interface IAdmin extends Document{
     name: string;
     phoneNumber: string;
     email: string;
-    role: string
+    role: string;
+    password: string;
 }
 
 const adminSchema = new mongoose.Schema<IAdmin>(
@@ -28,6 +29,10 @@ const adminSchema = new mongoose.Schema<IAdmin>(
             type: String,
             default: "Admin",
             enum: ["Admin"]
+        },
+        password: {
+            type: String,
+            required: true
         }
     }, { timestamps: true })
 

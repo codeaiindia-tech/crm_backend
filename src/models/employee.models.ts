@@ -8,6 +8,7 @@ export interface IUser {
   dateOfJoining: Date;
   role: string;
   password: string;
+  dateOfBirth: Date;
   callDetails: ICall[]
 }
 
@@ -29,6 +30,10 @@ const userSchema = new mongoose.Schema<IUser>(
     dateOfJoining: {
       type: Date,
       default: Date.now,
+    },
+    dateOfBirth: {
+      type: Date,
+      required: true
     },
     role: {
       type: String,
