@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
       email,
       dateOfBirth,
       password: hashedPassword,
+      role: "Employee"
     });
 
     // await Admin.employeesCreated.push(newEmployee)

@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
     const token = jwt.sign( 
         {
             id: user._id,
+            role: user.role
         },
         process.env.TOKEN_SECRET!,
         {
@@ -56,14 +57,23 @@ export async function POST(request: NextRequest) {
         
      )
 
-    const response = NextResponse.json( {
-        status: true,
-        message: "User logged in successfully"
-    }, { status: 200 } )
+    // const response = NextResponse.json( {
+    //     status: true,
+    //     message: "User logged in successfully"
+    // }, { status: 200 } )
 
-    response.cookies.set("token", token)
+    // response.cookies.set("token", token)
 
-    return response;
+    // return response;
+
+    return NextResponse.json({
+      status: true,
+      message: "User logged in successfully",
+      token,
+      user: {
+        id: user._id
+      }
+    }, { status:200 })
 
   } catch (error: any) {
     return NextResponse.json(

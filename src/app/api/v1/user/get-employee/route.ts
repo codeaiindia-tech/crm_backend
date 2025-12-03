@@ -23,7 +23,7 @@ export async function GET( request : NextRequest ){
         if(!user){
             return NextResponse.json({
                 status: false,
-                message: "unable to fetch",
+                message: "Unable to fetch the employee",
             }, { status: 400 })
         }
 
