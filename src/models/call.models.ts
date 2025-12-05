@@ -1,7 +1,7 @@
 import mongoose, { ObjectId } from "mongoose";
 
 export interface ICall{
-    userId: ObjectId,
+    empId: ObjectId,
     leadName: string,
     leadPhoneNumber: string,
     callType: string,
@@ -11,7 +11,7 @@ export interface ICall{
 }
 
 export const callSchema = new mongoose.Schema<ICall>({
-    userId: {
+    empId: {
         type: mongoose.Types.ObjectId,
         ref: "User",
         required: true
