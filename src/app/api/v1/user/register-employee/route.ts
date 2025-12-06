@@ -48,12 +48,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const hashedPassword = bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
     await dbConnect();
 
-    const existingEmployee = await User.findOne({ phoneNumber, email });
+    const existingEmployee = await User.findOne({ 
+      $or: [ { phoneNumber }, { email }  ]
+     });
 
     if (existingEmployee) {
       return NextResponse.json(
@@ -88,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     const adminUpdated = await Admin.findByIdAndUpdate(userId, 
         {
-            $push: [ { employeesCreated: newEmployee._id } ]
+            $push:  { employeesCreated: newEmployee._id } 
         },
         {
             new: true
@@ -104,13 +106,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        status: false,
+        status: true,
         message: "Employee registered successfully",
         data: newEmployee,
       },
       { status: 200 }
     );
   } catch (error: any) {
+    console.log(error)
     return NextResponse.json(
       {
         status: false,

@@ -4,6 +4,8 @@ import bcryptjs from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
 
+//modify according to thr react-native
+
 export async function POST(request: NextRequest) {
   const { identifier, password } = await request.json();
 
@@ -57,23 +59,23 @@ export async function POST(request: NextRequest) {
         
      )
 
-    // const response = NextResponse.json( {
-    //     status: true,
-    //     message: "User logged in successfully"
-    // }, { status: 200 } )
+    const response = NextResponse.json( {
+        status: true,
+        message: "User logged in successfully"
+    }, { status: 200 } )
 
-    // response.cookies.set("token", token)
+    response.cookies.set("employeeToken", token)
 
-    // return response;
+    return response;
 
-    return NextResponse.json({
-      status: true,
-      message: "User logged in successfully",
-      token,
-      user: {
-        id: user._id
-      }
-    }, { status:200 })
+    // return NextResponse.json({
+    //   status: true,
+    //   message: "User logged in successfully",
+    //   token,
+    //   user: {
+    //     id: user._id
+    //   }
+    // }, { status:200 })
 
   } catch (error: any) {
     return NextResponse.json(

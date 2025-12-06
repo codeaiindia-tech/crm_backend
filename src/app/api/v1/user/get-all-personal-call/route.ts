@@ -1,5 +1,7 @@
 import { dbConnect } from "@/db/dbConnect"
 import Call from "@/models/call.models"
+import User from "@/models/employee.models"
+import mongoose from "mongoose"
 import { NextRequest, NextResponse } from "next/server"
 
 
@@ -15,8 +17,19 @@ export async function GET(request:NextRequest){
     //     }, { status: 401 })
     // }
 
+
+    // for mobile authentication --->
+
+    // const authHeader = request.headers.get("Authorization");
+    // if (!authHeader) {
+    //   return NextResponse.json(
+    //     { status: false, message: "Missing Authorization header" },
+    //     { status: 401 }
+    //   );
+    // }
+
     const {searchParams} = new URL(request.url)
-    const empId = searchParams.get("eid")
+    const empId = searchParams.get("uId")
 
     if(!empId){
         return NextResponse.json({
@@ -28,6 +41,15 @@ export async function GET(request:NextRequest){
     try {
         
         await dbConnect();
+
+        const employee = await User.findById(new mongoose.Types.ObjectId(empId))
+
+        if(!employee){
+            return NextResponse.json({
+                status: false,
+                message: "No such Employee exists"
+            }, { status:400 })
+        }
 
         const callList = await Call.find( { empId: empId } ).sort({ createdAt: -1 })
 
@@ -42,7 +64,8 @@ export async function GET(request:NextRequest){
             status: true,
             message: "Call list fetched successfully",
             data: {
-                user: empId,
+                employee: employee.name,
+                total: callList.length,
                 callList: callList
             }
         }, { status:200 })

@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     const newLeadDetail = await Call.create( {
-        userId: userId,
+        empId: userId,
         leadName: leadName,
         leadPhoneNumber: leadPhoneNumber,
         callType: callType,

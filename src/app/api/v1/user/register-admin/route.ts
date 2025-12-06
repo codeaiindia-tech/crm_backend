@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
 
-    const existingAdmin = await Admin.find({ phoneNumber });
+    const existingAdmin = await Admin.findOne({ phoneNumber });
 
     if (existingAdmin) {
       return NextResponse.json(
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { status: false, message: "User registered successfully" },
+      { status: true, message: "User registered successfully" },
       { status: 200 }
     );
   } catch (error: any) {

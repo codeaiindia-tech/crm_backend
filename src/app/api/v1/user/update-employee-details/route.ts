@@ -1,19 +1,20 @@
 import { dbConnect } from "@/db/dbConnect";
 import User from "@/models/employee.models";
 import { getDataToken } from "@/utils/getDataToken";
+import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
 
 export async function POST(request:NextRequest){
 
-    const { name, phoneNumber, email } = await request.json()
+    const { name, phoneNumber, email, newPassword } = await request.json()
 
-    if(!name || !phoneNumber || !email){
-        return NextResponse.json({
-            status: false,
-            message: "Either of the field is missing"
-        }, { status: 401 })
-    }
+    // if(!name || !phoneNumber || !email){
+    //     return NextResponse.json({
+    //         status: false,
+    //         message: "Either of the field is missing"
+    //     }, { status: 401 })
+    // }
 
     const {searchParams} = new URL(request.url)
     const uId = searchParams.get("uId")
@@ -31,10 +32,13 @@ export async function POST(request:NextRequest){
 
         await dbConnect();
 
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+
         const updatedEmployee = await User.findByIdAndUpdate(uId, { 
             name: name,
             phoneNumber: phoneNumber,
-            email: email
+            email: email,
+            password: hashedPassword
          }, { new: true })
 
          if(!updatedEmployee){

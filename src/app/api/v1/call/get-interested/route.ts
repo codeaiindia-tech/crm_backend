@@ -19,7 +19,7 @@ export async function GET(request: NextRequest){
 
         await dbConnect();
 
-        const interested = await Call.find({ interested: true }).sort({craetedAt: -1})
+        const interested = await Call.find({ interested: true }).sort({createdAt: -1})
 
         if(!interested){
             return NextResponse.json({
@@ -31,6 +31,7 @@ export async function GET(request: NextRequest){
         return NextResponse.json({ 
             status: true,
             message: "Intereted Lead fetched successfully",
+            totalResult: interested.length,
             data: interested
          }, { status:200 })
         

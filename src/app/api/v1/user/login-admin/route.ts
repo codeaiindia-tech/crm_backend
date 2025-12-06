@@ -37,7 +37,7 @@ export async function POST( request:NextRequest ){
             }, { status:400 })
         }
 
-        const passwordVerification = bcrypt.compare(password, existingAdmin.password)
+        const passwordVerification = await bcrypt.compare(password, existingAdmin.password)
 
         if(!passwordVerification){
             return NextResponse.json({

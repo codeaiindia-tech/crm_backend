@@ -30,6 +30,7 @@ export async function GET( request : NextRequest ){
         return NextResponse.json({
             status: true,
             message: "Incoming calls fetched successfully",
+            totalResult: allIncomingCalls.length,
             data: allIncomingCalls 
         }, { status: 200 })
 

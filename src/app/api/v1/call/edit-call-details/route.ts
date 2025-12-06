@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   const leadId = searchParams.get("leadId");
   const { leadName, leadPhoneNumber, interested } = await request.json();
 
-  if (!leadName || !leadPhoneNumber || !interested) {
+  if (!leadName || !leadPhoneNumber || interested==undefined) {
     return NextResponse.json(
       {
         status: false,
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
 
-    const existingLead = await Call.findOne({ _id: leadId, userId: userId });
+    const existingLead = await Call.findOne({ _id: leadId, empId: userId });
 
     if (!existingLead) {
       return NextResponse.json(

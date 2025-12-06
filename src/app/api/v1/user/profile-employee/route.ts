@@ -1,10 +1,12 @@
+import { dbConnect } from "@/db/dbConnect";
 import User from "@/models/employee.models";
 import { getDataToken } from "@/utils/getDataToken";
+import mongoose, { mongo } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const eId = searchParams.get("eid");
+  const eId = searchParams.get("uId");
 
   if (!eId) {
     return NextResponse.json(
@@ -16,20 +18,25 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const userId = await getDataToken(request);
+  const empId = new mongoose.Types.ObjectId(eId)
 
-  if (!userId) {
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Unauthorized Access",
-      },
-      { status: 401 }
-    );
-  }
+  // const userId = await getDataToken(request);
+
+  // if (!userId) {
+  //   return NextResponse.json(
+  //     {
+  //       status: false,
+  //       message: "Unauthorized Access",
+  //     },
+  //     { status: 401 }
+  //   );
+  // }
 
   try {
-    const employeeProfile = await User.findById(eId).select("-password");
+
+    await dbConnect();
+
+    const employeeProfile = await User.findById(empId).select("-password");
 
     if (!employeeProfile) {
       return NextResponse.json(

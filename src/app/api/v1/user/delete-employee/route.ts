@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET( request : NextRequest ){
     
     const { searchParams } = new URL(request.url)
-    const empId = searchParams.get("id")
+    const empId = searchParams.get("uId")
 
     if(!empId){
         return NextResponse.json( {

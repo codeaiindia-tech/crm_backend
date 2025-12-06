@@ -1,4 +1,5 @@
 import { dbConnect } from "@/db/dbConnect";
+import { Admin } from "@/models/admin.models";
 import User from "@/models/employee.models";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
@@ -25,18 +26,18 @@ export async function POST( request : NextRequest ){
     try {
         await dbConnect();
 
-        const existingUser = await User.findOne( { phoneNumber } )
+        const existingAdmin = await Admin.findOne( { phoneNumber } )
 
-        if(!existingUser){
+        if(!existingAdmin){
             return NextResponse.json( {
                 status: false,
-                message: "User does not exist, please Register"
+                message: "Admin does not exist, please Register"
             }, { status: 401 } )
         }
 
         const newHashedPassword = await bcrypt.hash(confirmNewPassword, 10)
 
-        const updatedUserPassword = await User.findByIdAndUpdate( existingUser._id ,
+        const updatedAdminPassword = await Admin.findByIdAndUpdate( existingAdmin._id ,
             {
                 password: newHashedPassword
             },
@@ -45,12 +46,14 @@ export async function POST( request : NextRequest ){
             }
         )
 
-        if(!updatedUserPassword){
+        if(!updatedAdminPassword){
             return NextResponse.json( {
                 status: false,
                 message: "Error while changing the password"
             }, { status: 402 } )
         }
+
+        const updatedAdmin = await Admin.findByIdAndUpdate()
 
         return NextResponse.json({ 
             status: true,

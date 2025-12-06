@@ -4,15 +4,17 @@ import jwt from "jsonwebtoken"
 
 export const getDataToken = async ( request : NextRequest ) => {
     try {
-        const token = request.cookies.get("token")?.value
+        const token = request.cookies.get("token")?.value || request.cookies.get("employeeToken")?.value
         const secretToken = process.env.TOKEN_SECRET!
 
-        if(!token && !secretToken){
-            return NextResponse.json({
-                status: false,
-                message: "Unauthorized access",
-                error: "Missing token or secret token"
-            }, { status: 401 })
+        if(!token || !secretToken){
+            // return NextResponse.json({
+            //     status: false,
+            //     message: "Unauthorized access",
+            //     error: "Missing token or secret token"
+            // }, { status: 401 })
+
+            return null;
         }
 
         const decodedToken : any = jwt.verify( token!, secretToken )
