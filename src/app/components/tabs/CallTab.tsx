@@ -9,8 +9,6 @@ const CallTab = ({ allCalls, incomingCalls, outgoingCalls }: { allCalls: Array<a
   const [all, setAll] = useState(allCalls)
   const [interested, setInterested] = useState("all")
 
-  const [filteredCall, setFilteredCall] = useState<Array<any>>([])
-
   useEffect(()=>{
 
     let filtered = allCalls
