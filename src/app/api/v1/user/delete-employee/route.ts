@@ -1,10 +1,20 @@
 import { dbConnect } from "@/db/dbConnect";
 import User from "@/models/employee.models";
+import { getDataToken } from "@/utils/getDataToken";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 
 export async function GET( request : NextRequest ){
+
+    const { adminId } = await getDataToken(request)
+
+    if(!adminId){
+        return NextResponse.json({
+            status: false,
+            message: "Unauthorized request"
+        }, { status:401 })
+    }
     
     const { searchParams } = new URL(request.url)
     const empId = searchParams.get("uId")

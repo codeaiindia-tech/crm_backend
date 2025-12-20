@@ -3,12 +3,14 @@ import { Admin } from "@/models/admin.models";
 import User from "@/models/employee.models";
 import { getDataToken } from "@/utils/getDataToken";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const userId = await getDataToken(request);
 
-  if (!userId) {
+  const {adminId} = await getDataToken(request);
+
+  if (!adminId) {
     return NextResponse.json(
       {
         status: false,
@@ -61,13 +63,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           status: false,
-          message: "Employee already exists",
+          message: "Employee already exists with this email or phone number.",
         },
         { status: 400 }
       );
     }
 
     const newEmployee = await User.create({
+      adminId: adminId,
       name,
       phoneNumber,
       email,
@@ -88,7 +91,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const adminUpdated = await Admin.findByIdAndUpdate(userId, 
+    const adminUpdated = await Admin.findByIdAndUpdate( new mongoose.Types.ObjectId(adminId) , 
         {
             $push:  { employeesCreated: newEmployee._id } 
         },

@@ -1,45 +1,70 @@
-import { getDataToken } from "@/utils/getDataToken";
-import { dbConnect } from "@/db/dbConnect";
-import Call from "@/models/call.models";
-import { NextRequest, NextResponse } from "next/server";
+import { dbConnect } from "@/db/dbConnect"
+import { Admin } from "@/models/admin.models"
+import Call from "@/models/call.models"
+import { getDataToken } from "@/utils/getDataToken"
+import mongoose from "mongoose"
+import { NextRequest, NextResponse } from "next/server"
 
-// route for INCOMING CALLS ONLY
-export async function GET( request : NextRequest ){
-    
-    const userId = await getDataToken(request)
+export async function GET(request: NextRequest) {
+  try {
+    await dbConnect()
 
-    if(!userId){
-        return NextResponse.json({
-            status: false,
-            message: "Unauthorized request"
-        }, { status: 401 })
+    const {adminId} = await getDataToken(request)
+
+    if (!adminId) {
+      return NextResponse.json(
+        { status: false, message: "Unauthorized Access" },
+        { status: 401 }
+      )
     }
 
-    try {
-        await dbConnect();
+    const admin = await Admin.findById(new mongoose.Types.ObjectId(adminId)).select("employeesCreated")
 
-        const allIncomingCalls = await Call.find({ callType: "INCOMING" }).sort({ createdAt: -1 })
-
-        if(!allIncomingCalls){
-            return NextResponse.json({
-                status: false,
-                message: "Unable to fetch INCOMING CALLS"
-            }, { status: 400 })
-        }
-
-        return NextResponse.json({
-            status: true,
-            message: "Incoming calls fetched successfully",
-            totalResult: allIncomingCalls.length,
-            data: allIncomingCalls 
-        }, { status: 200 })
-
-    } catch (error:any) {
-        return NextResponse.json({
-            status: false,
-            message: "Internal Server Error",
-            error: error.message
-        }, { status: 500 })
+    if (!admin) {
+      return NextResponse.json(
+        { status: false, message: "Admin not found", totalIncomingCalls:0 },
+        { status: 404 }
+      )
     }
 
+    if (admin.employeesCreated.length === 0) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "No employees under this admin",
+          totalIncomingCalls: 0,
+          data: []
+        },
+        { status: 200 }
+      )
+    }
+
+    const incomingCalls = await Call.find({
+      callType: "INCOMING",
+      empId: { $in: admin.employeesCreated },
+    })
+      .populate("employeeId", "name email phoneNumber")
+      .sort({ createdAt: -1 })
+
+    return NextResponse.json(
+      {
+        status: true,
+        message: "Incoming calls fetched successfully",
+        totalIncomingCalls: incomingCalls.length,
+        data: incomingCalls,
+      },
+      { status: 200 }
+    )
+
+  } catch (error: any) {
+    console.error(error)
+    return NextResponse.json(
+      {
+        status: false,
+        message: "Internal Server Error",
+        error: error.message,
+      },
+      { status: 500 }
+    )
+  }
 }

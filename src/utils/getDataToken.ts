@@ -1,30 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken"
+import jwt, { JwtPayload } from "jsonwebtoken";
 
+export const getDataToken = async (request: NextRequest) => {
+  const aToken = request.cookies.get("adminToken")?.value;
+  const eToken = request.cookies.get("employeeToken")?.value;
 
-export const getDataToken = async ( request : NextRequest ) => {
-    try {
-        const token = request.cookies.get("token")?.value || request.cookies.get("employeeToken")?.value
-        const secretToken = process.env.TOKEN_SECRET!
+  if (!aToken) {
+    throw new Error("Admin token missing");
+  }
 
-        if(!token || !secretToken){
-            // return NextResponse.json({
-            //     status: false,
-            //     message: "Unauthorized access",
-            //     error: "Missing token or secret token"
-            // }, { status: 401 })
+  let adminId: string | null = null;
+  let employeeId: string | null = null;
 
-            return null;
-        }
+  if (aToken) {
+    const decoded = jwt.verify(aToken, process.env.TOKEN_SECRET!) as JwtPayload;
 
-        const decodedToken : any = jwt.verify( token!, secretToken )
+    adminId = decoded.id;
+  }
 
-        return decodedToken.id;
+  if (eToken) {
+    const decoded = jwt.verify(eToken, process.env.TOKEN_SECRET!) as JwtPayload;
 
-    } catch (error:any) {
-        return NextResponse.json({
-            success: false,
-            message: "Error while fetching the token"
-        }, {status: 500})
-    }
-} 
+    employeeId = decoded.id;
+  }
+
+  return { adminId, employeeId };
+};

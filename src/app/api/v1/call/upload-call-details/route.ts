@@ -3,6 +3,7 @@ import { dbConnect } from "@/db/dbConnect";
 import Call from "@/models/call.models";
 import User from "@/models/employee.models";
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 export async function POST(request: NextRequest) {
   const {
@@ -37,45 +38,81 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const userId = await getDataToken(request)
+  const { adminId, employeeId } = await getDataToken(request);
 
-  if(!userId){
-    return NextResponse.json({
-      status: false,
-      message: "Unauthorized Request"
-    }, { status: 401 })
+  if (!adminId) {
+    return NextResponse.json(
+      {
+        status: false,
+        message: "Unauthorized Request admin-token missing",
+      },
+      { status: 401 }
+    );
+  }
+  if (!employeeId) {
+    return NextResponse.json(
+      {
+        status: false,
+        message: "Unauthorized Request employee-token missing",
+      },
+      { status: 401 }
+    );
   }
 
-//   const {searchParams} = new URL(request.url)
-//   const userId = searchParams.get("id")
+  //   const {searchParams} = new URL(request.url)
+  //   const userId = searchParams.get("id")
 
   try {
     await dbConnect();
 
-    const newLeadDetail = await Call.create( {
-        empId: userId,
-        leadName: leadName,
-        leadPhoneNumber: leadPhoneNumber,
-        callType: callType,
-        callStatus: callStatus,
-        interested: interested,
-        notes: notes
-    } )
+    const newLeadDetail = await Call.create({
+      empId: employeeId,
+      leadName: leadName,
+      leadPhoneNumber: leadPhoneNumber,
+      callType: callType,
+      callStatus: callStatus,
+      interested: interested,
+      notes: notes,
+    });
 
-    if(!newLeadDetail){
-        return NextResponse.json( { 
-            status: false,
-            message: "Error while uploading call details"
-         }, {status:402} )
+    if (!newLeadDetail) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Error while uploading call details",
+        },
+        { status: 402 }
+      );
     }
 
-    return NextResponse.json({
+    const employeeUpdated = await User.findByIdAndUpdate(
+      new mongoose.Types.ObjectId(employeeId),
+      {
+        $push: { totalCalls: newLeadDetail._id },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!employeeUpdated) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Error while pushing the call details to employee",
+        },
+        { status: 402 }
+      );
+    }
+
+    return NextResponse.json(
+      {
         status: true,
         message: "Call details uploaded successfully",
-        data: newLeadDetail
-    }, { status: 200 })
-    
-
+        data: newLeadDetail,
+      },
+      { status: 200 }
+    );
   } catch (error: any) {
     return NextResponse.json(
       {

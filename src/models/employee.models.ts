@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { callSchema, ICall } from "./call.models";
 
 export interface IUser {
+  adminId: mongoose.Types.ObjectId
   name: string;
   email: string;
   phoneNumber: string;
@@ -9,11 +10,15 @@ export interface IUser {
   role: string;
   password: string;
   dateOfBirth: Date;
-  callDetails: ICall[]
+  totalCalls: []
 }
 
 const userSchema = new mongoose.Schema<IUser>(
   {
+    adminId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Admin"
+    },
     name: {
       type: String,
       required: true,
@@ -45,7 +50,12 @@ const userSchema = new mongoose.Schema<IUser>(
       type: String,
       required: true,
     },
-    // callDetails: [ callSchema ]
+    totalCalls: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Call"
+      }
+    ]
   },
   { timestamps: true }
 );

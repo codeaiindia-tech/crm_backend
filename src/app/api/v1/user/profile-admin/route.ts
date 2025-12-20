@@ -1,15 +1,17 @@
 import { dbConnect } from "@/db/dbConnect";
+import { Admin } from "@/models/admin.models";
 import User from "@/models/employee.models";
 import { getDataToken } from "@/utils/getDataToken";
+import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 
 
 export async function GET(request:NextRequest){
 
-    const userId = await getDataToken(request)
+    const {adminId} = await getDataToken(request)
 
-    if(!userId){
+    if(!adminId){
         return NextResponse.json({
             status: false,
             message: "Unauthorized Access"
@@ -20,7 +22,7 @@ export async function GET(request:NextRequest){
         
         await dbConnect();
 
-        const adminProfile = await User.findById(userId)
+        const adminProfile = await Admin.findById(new mongoose.Types.ObjectId(adminId))
 
         if(!adminProfile){
             return NextResponse.json({

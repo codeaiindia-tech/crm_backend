@@ -1,44 +1,49 @@
-import { getDataToken } from "@/utils/getDataToken";
 import { dbConnect } from "@/db/dbConnect";
-import Call from "@/models/call.models";
+import { Admin } from "@/models/admin.models";
+import { getDataToken } from "@/utils/getDataToken";
 import { NextRequest, NextResponse } from "next/server";
 
 
+
 export async function GET(request:NextRequest){
+    const {adminId} = await getDataToken(request)
 
-    const userId = await getDataToken(request)
-
-    if(!userId){
+    if(!adminId){
         return NextResponse.json({
             status: false,
-            message: "Unauthorized request"
-        }, { status: 401 })
+            message: "Unauthorized Request"
+        }, { status:401 })
     }
 
     try {
         await dbConnect();
 
-        const allCalls = await Call.find().sort({ createdAt: -1 })
+        const admin = await Admin.findById(adminId).select("employeesCreated")
 
-        if(!allCalls){
+        if(!admin){
             return NextResponse.json({
                 status: false,
-                message: "Unable to fetch call logs"
-            }, { status: 400 })
+                message: "Unable to find the Admin"
+            }, { status:400 })
         }
 
-        return NextResponse.json({
-            status: true,
-            message: "All call log fetched successfully",
-            totalCalls: allCalls.length,
-            data: allCalls
-        }, { status: 200 })
+        if(admin.employeesCreated.length === 0){
+            return NextResponse.json({
+                status: false,
+                message: "No employees under this admin",
+                totalCalls: 0,
+                
+            }, { status:400 })
+        }
+
+
 
     } catch (error:any) {
         return NextResponse.json({
             status: false,
-            message: "Internal Server Error",
+            message: "Internal server Error",
             error: error.message
-        }, { status: 500 })
+        }, { status:500 })
     }
+
 }

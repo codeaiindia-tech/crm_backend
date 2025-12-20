@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         status: false,
-        message: "Unauthorized Request",
+        message: "Unauthorized access",
       },
       { status: 401 }
     );
@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
         {
           status: false,
           message: "Unable to fetch admin",
-          totalOutgoingCalls: 0,
         },
         { status: 400 }
       );
@@ -40,37 +39,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           status: false,
-          message: "No employees under Admin",
-          totalOutgoingCall: 0,
-          data: []
+          message: "No employees under this admin",
+          totalConnectedCalls: 0
         },
         { status: 200 }
       );
     }
 
-    const outgoingCalls = await Call.find({
-      callType: "OUTGOING",
+    const connectedCalls = await Call.find({
+      callStatus: "CONNECTED",
       empId: { $in: admin.employeesCreated },
-    })
-      .populate("employeeId", "name email phoneNumber")
-      .sort({ createdAt: -1 });
+    }).populate("empId name email phoneNumber").sort({ createdAt: -1 })
 
-    return NextResponse.json(
-      {
+    return NextResponse.json({
         status: true,
-        message: "Outgoing calls fetched successfully",
-        totalOutgoingCall: outgoingCalls.length,
-        data: outgoingCalls,
-      },
-      { status: 200 }
-    );
+        message: "All rejected calls fetched successfully",
+        totalConnectedCalls: connectedCalls.length,
+        connectedCalls
+    }, { status:200 })
+
   } catch (error: any) {
-    console.log(error);
+    console.log("Error while fetching all rejected calls", error);
     return NextResponse.json(
       {
         status: false,
-        message: "Internal Server Error",
-        error: error.message,
+        message: "Error while fetching rejected calls",
       },
       { status: 500 }
     );

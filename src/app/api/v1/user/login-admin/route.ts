@@ -62,7 +62,7 @@ export async function POST( request:NextRequest ){
             message: "Admin logged in successfully"
         }, { status:200 })
 
-        response.cookies.set("token", token, { secure:true, httpOnly: true })
+        response.cookies.set("adminToken", token, { secure:true, httpOnly: true })
 
         return response;
 

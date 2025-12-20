@@ -18,7 +18,7 @@ export async function GET( request : NextRequest ){
 
         await dbConnect();
 
-        const user = await User.find().sort({ createdAt: -1 });
+        const user = await User.find( { adminId: userId } ).sort({ createdAt: -1 });
 
         if(!user){
             return NextResponse.json({
