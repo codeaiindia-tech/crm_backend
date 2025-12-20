@@ -40,15 +40,7 @@ export async function POST(request: NextRequest) {
 
   const { adminId, employeeId } = await getDataToken(request);
 
-  if (!adminId) {
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Unauthorized Request admin-token missing",
-      },
-      { status: 401 }
-    );
-  }
+
   if (!employeeId) {
     return NextResponse.json(
       {

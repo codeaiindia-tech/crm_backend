@@ -1,6 +1,7 @@
 import { dbConnect } from "@/db/dbConnect";
 import { Admin } from "@/models/admin.models";
 import Call from "@/models/call.models";
+import User from "@/models/employee.models";
 import { getDataToken } from "@/utils/getDataToken";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
     const missedCalls = await Call.find({
       callStatus: "MISSED",
       empId: { $in: admin.employeesCreated },
-    }).populate("empId name email phoneNumber").sort({ createdAt: -1 })
+    }).populate("empId").sort({ createdAt: -1 })
 
     return NextResponse.json({
         status: true,

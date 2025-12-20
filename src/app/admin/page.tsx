@@ -75,6 +75,7 @@ const AdminDashboardPage = () => {
       }))
 
     } catch (error: any) {
+      setAccess(false)
       console.log("Error in fetching admin profile")
       console.log(error)
     }
@@ -146,7 +147,9 @@ const AdminDashboardPage = () => {
         ]
       )
 
-      console.log("Response CALLS COUNT/ALL CALLS", response[2])
+      console.log("RESPONSE FOR CALL LIST: ")
+      console.log(response[2])
+
 
       const incomingCalls = response[0].status === "fulfilled" ? response[0].value.data.data : []
 
@@ -174,6 +177,7 @@ const AdminDashboardPage = () => {
       setAllCalls(allCalls)
 
     } catch (error: any) {
+      setAccess(false)
       console.log("Error while fetching INCOMING/OUTGOING Calls")
       console.error(error)
     }
@@ -206,20 +210,33 @@ const AdminDashboardPage = () => {
       )
 
     } catch (error: any) {
+      setAccess(false)
       console.log("Error while fetching CONNECTED/MISSED/REJECTED calls")
       console.error(error)
     }
   }
 
   useEffect(() => {
-    setIsLoading(true)
-    console.log("page loaded")
     profileFetch()
     fetchAllCallTypes()
     fetchCallStatus()
-    setIsLoading(false)
-    setAccess(true)
   }, [])
+
+  setTimeout(() => {
+    setIsLoading(false)
+  }, 3000);
+
+  const refresh = ()=>{
+    setIsLoading(true)
+    profileFetch()
+    fetchAllCallTypes()
+    fetchCallStatus()
+
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 2000);
+    
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -244,6 +261,7 @@ const AdminDashboardPage = () => {
                   outgoing={callType.outgoing}
                   callCount={adminData.callCount}
                   employeesCount={adminData.employeesCount}
+                  refresh = { refresh } 
                 />
               )}
               {activeTab === "call" && <CallTab allCalls={allCalls} incomingCalls={allIncomingCalls} outgoingCalls={allOutgoingCalls} />}

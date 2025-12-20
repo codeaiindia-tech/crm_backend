@@ -36,7 +36,7 @@ export async function GET(request:NextRequest){
             }, { status:400 })
         }
 
-
+        
 
     } catch (error:any) {
         return NextResponse.json({

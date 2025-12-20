@@ -1,0 +1,5 @@
+{all.map((call, index) => (
+  <li key={index}>
+    {typeof call === "object" ? JSON.stringify(call) : call}
+  </li>
+))}

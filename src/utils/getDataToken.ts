@@ -5,9 +5,9 @@ export const getDataToken = async (request: NextRequest) => {
   const aToken = request.cookies.get("adminToken")?.value;
   const eToken = request.cookies.get("employeeToken")?.value;
 
-  if (!aToken) {
-    throw new Error("Admin token missing");
-  }
+  // if (!aToken) {
+  //   throw new Error("Admin token missing");
+  // }
 
   let adminId: string | null = null;
   let employeeId: string | null = null;

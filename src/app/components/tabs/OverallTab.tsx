@@ -4,13 +4,22 @@ import StatCard from "../StatCard"
 import { FiPhoneOutgoing } from "react-icons/fi"
 import { MdPerson } from "react-icons/md"
 import { IoCallSharp } from "react-icons/io5"
+import { TbRefresh } from "react-icons/tb"
+import { useState } from "react"
 
 
-const OverallTab = ({ employeesCount, callCount, missed, connected, rejected, incoming, outgoing }: { employeesCount: number, callCount: number, missed: number, connected: number, rejected: number, incoming: number, outgoing: number }) => {
+const OverallTab = ({ refresh, employeesCount, callCount, missed, connected, rejected, incoming, outgoing }: { refresh: any, employeesCount: number, callCount: number, missed: number, connected: number, rejected: number, incoming: number, outgoing: number }) => {
+
+
   return (
     <div>
 
-      <h2 className="text-lg font-semibold mb-2" >Charts View</h2>
+      <div className="flex justify-start items-center gap-x-2">
+        <h2 className="text-lg font-semibold" >Charts View</h2>
+        <span onClick={refresh} className="p-2 bg-gray-300 rounded shadow" >
+          <TbRefresh size={20}  />
+        </span>
+      </div>
       <div className="py-4">
         <Chart missed={missed} connected={connected} rejected={rejected} />
       </div>

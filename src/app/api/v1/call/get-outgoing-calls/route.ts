@@ -4,6 +4,7 @@ import Call from "@/models/call.models";
 import { getDataToken } from "@/utils/getDataToken";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
+import "@/models/employee.models"
 
 export async function GET(request: NextRequest) {
   const { adminId } = await getDataToken(request);
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
       callType: "OUTGOING",
       empId: { $in: admin.employeesCreated },
     })
-      .populate("employeeId", "name email phoneNumber")
+      .populate("empId")
       .sort({ createdAt: -1 });
 
     return NextResponse.json(

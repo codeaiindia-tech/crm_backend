@@ -1,6 +1,7 @@
 import { dbConnect } from "@/db/dbConnect"
 import { Admin } from "@/models/admin.models"
 import Call from "@/models/call.models"
+import "@/models/employee.models"
 import { getDataToken } from "@/utils/getDataToken"
 import mongoose from "mongoose"
 import { NextRequest, NextResponse } from "next/server"
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
       callType: "INCOMING",
       empId: { $in: admin.employeesCreated },
     })
-      .populate("employeeId", "name email phoneNumber")
+      .populate("empId")
       .sort({ createdAt: -1 })
 
     return NextResponse.json(

@@ -1,56 +1,82 @@
 import { dbConnect } from "@/db/dbConnect";
+import { Admin } from "@/models/admin.models";
 import User from "@/models/employee.models";
 import { getDataToken } from "@/utils/getDataToken";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
+export async function GET(request: NextRequest) {
+  const { adminId } = await getDataToken(request);
 
-export async function GET( request : NextRequest ){
+  if (!adminId) {
+    return NextResponse.json(
+      {
+        status: false,
+        message: "Unauthorized request",
+      },
+      { status: 401 }
+    );
+  }
 
-    const { adminId } = await getDataToken(request)
+  const { searchParams } = new URL(request.url);
+  const empId = searchParams.get("uId");
 
-    if(!adminId){
+  if (!empId) {
+    return NextResponse.json(
+      {
+        status: false,
+        message: "Employee Id is missing",
+      },
+      { status: 401 }
+    );
+  }
+
+  try {
+    await dbConnect();
+
+    // const existingUser = await User.findById()
+
+    const deleteExistingUser = await User.findByIdAndDelete(empId);
+
+    if (!deleteExistingUser) {
+      return NextResponse.json(
+        {
+          status: false,
+          message: "Error while deleting user",
+        },
+        { status: 402 }
+      );
+    }
+
+    const adminDeleteEmployee = await Admin.findByIdAndUpdate(
+      new mongoose.Types.ObjectId(adminId),
+      {
+        $pull: { employeesCreated: new mongoose.Types.ObjectId(empId) },
+      }, { new:true }
+    );
+
+    if(!adminDeleteEmployee){
         return NextResponse.json({
             status: false,
-            message: "Unauthorized request"
-        }, { status:401 })
-    }
-    
-    const { searchParams } = new URL(request.url)
-    const empId = searchParams.get("uId")
-
-    if(!empId){
-        return NextResponse.json( {
-            status: false,
-            message: "Employee Id is missing"
-        }, { status: 401 } )
+            message: "Failed to pull the particular employee"
+        }, { status:400 })
     }
 
-    try {
-        await dbConnect();
-
-        // const existingUser = await User.findById()
-        
-        const deleteExistingUser = await User.findByIdAndDelete(empId)
-
-        if(!deleteExistingUser){
-            return NextResponse.json( {
-                status: false,
-                message: "Error while deleting user"
-            }, { status: 402 } )
-        }
-
-        return NextResponse.json({
-            status: true,
-            message: "Employee deleted successfully"
-        }, { status: 200 })
-
-    } catch (error : any) {
-        return NextResponse.json( {
-            status: false,
-            message: "Internal Server Error",
-            error: error.message
-        }, { status: 500 } )
-    }
-
+    return NextResponse.json(
+      {
+        status: true,
+        message: "Employee deleted successfully",
+      },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        status: false,
+        message: "Internal Server Error",
+        error: error.message,
+      },
+      { status: 500 }
+    );
+  }
 }
