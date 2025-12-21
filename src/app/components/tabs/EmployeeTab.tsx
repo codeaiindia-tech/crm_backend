@@ -5,13 +5,15 @@ import * as Dialog from "@radix-ui/react-dialog"
 import { Cross2Icon } from "@radix-ui/react-icons"
 import axios from "axios"
 import { toast } from "react-toastify"
-import { AiOutlineLoading3Quarters } from "react-icons/ai"
 import { FiRefreshCw } from "react-icons/fi"
+import { AiOutlineLoading3Quarters } from "react-icons/ai"
+import bcrypt from "bcryptjs"
 
 const EmployeeTab = () => {
-
-  const [allEmployees, setAllEmployees] = React.useState([])
-  const [isLoading, setIsLoading] = React.useState<boolean>(false)
+  const [allEmployees, setAllEmployees] = React.useState<any[]>([])
+  const [loadingDelete, setLoadingDelete] = React.useState<string | null>(null)
+  const [selectedEmployee, setSelectedEmployee] = React.useState<any | null>(null)
+  const [showCallHistory, setShowCallHistory] = React.useState<boolean>(false)
 
   const [employeeData, setEmployeeData] = React.useState({
     name: "",
@@ -22,40 +24,38 @@ const EmployeeTab = () => {
     confirmPassword: "",
   })
 
+  /* ================= FETCH EMPLOYEES ================= */
+
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get("/api/v1/user/get-all-employees", { withCredentials: true })
-
-      console.log("Response employee fetch: ", response.data)
-
-      setAllEmployees(response.data.data)
-
-      toast.success(response.data.message)
-
-    } catch (error: any) {
-      console.log("Error while fetching Employees")
-      console.error(error)
-      toast.error(error.response.data.message)
+      const res = await axios.get("/api/v1/user/get-all-employees", {
+        withCredentials: true,
+      })
+      setAllEmployees(res.data.data)
+    } catch (err: any) {
+      toast.error("Failed to fetch employees")
     }
   }
+
+  React.useEffect(() => {
+    fetchEmployees()
+  }, [])
+
+  /* ================= CREATE EMPLOYEE ================= */
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setEmployeeData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    console.log("Form to be submitted: ", employeeData)
-
+  const handleSubmit = async () => {
     try {
-
-      const response = await axios.post("/api/v1/user/register-employee", employeeData)
-
-      console.log("Response from registering the user", response.data)
-
-      toast.success(response.data.message)
-
+      const res = await axios.post(
+        "/api/v1/user/register-employee",
+        employeeData
+      )
+      toast.success(res.data.message)
+      fetchEmployees()
       setEmployeeData({
         name: "",
         email: "",
@@ -64,154 +64,163 @@ const EmployeeTab = () => {
         password: "",
         confirmPassword: "",
       })
-
-    } catch (error: any) {
-      console.log("Error while registering the employee")
-      console.error(error)
+    } catch (err: any) {
+      toast.error("Failed to create employee")
     }
-
   }
 
-  const refresh = () => {
-    fetchEmployees()
-  }
+  /* ================= DELETE EMPLOYEE ================= */
 
-  React.useEffect(() => {
-    fetchEmployees()
-  }, [])
-
-  const deleteEmployee = async ({ empId }: { empId: any }) => {
+  const deleteEmployee = async (empId: string) => {
     try {
-      const response = await axios.get(`/api/v1/user/delete-employee?uId=${empId}`)
-
-      console.log("Delete Employee: ", response.data)
-
-      toast.success(response.data.message)
-
-    } catch (error: any) {
-      console.log("Error while deleting the employee")
-      console.error(error)
+      setLoadingDelete(empId)
+      const res = await axios.get(
+        `/api/v1/user/delete-employee?uId=${empId}`
+      )
+      toast.success(res.data.message)
+      fetchEmployees()
+      setSelectedEmployee(null)
+    } catch {
+      toast.error("Delete failed")
+    } finally {
+      setLoadingDelete(null)
     }
   }
+
+  const handleCallHistory = () => {
+    setShowCallHistory((prev) => !prev)
+  }
+
+  // const password = await bcrypt.verify()
+
+  if (selectedEmployee) {
+    return (
+      <>
+        <div className="rounded-xl bg-white border p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold">Employee Detail</h2>
+            <button
+              onClick={() => setSelectedEmployee(null)}
+              className="border px-4 py-2 rounded"
+            >
+              Back
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8">
+            <Detail label="Name" value={selectedEmployee.name} />
+            <Detail label="Email" value={selectedEmployee.email} />
+            <Detail label="Phone" value={selectedEmployee.phoneNumber} />
+            <Detail
+              label="Date of Birth"
+              value={
+                selectedEmployee.dateOfBirth
+                  ? new Date(
+                    selectedEmployee.dateOfBirth
+                  ).toLocaleDateString()
+                  : "—"
+              }
+            />
+            <Detail
+              label="Total Calls"
+              value={selectedEmployee.totalCalls?.length || 0}
+            />
+            {/* <Detail label="Password" value={selectedEmployee.password} /> */}
+            <div>
+              <p className="text-sm text-gray-500">Password</p>
+
+              {/* introduce shadcn pop-up */}
+              <button className="px-2 py-1 rounded bg-black text-white hover:cursor-pointer" >Reset</button>
+            </div>
+          </div>
+
+          <div className="mt-8 flex gap-4">
+            <button onClick={ handleCallHistory } className="bg-black text-white px-4 py-2 rounded">
+              { showCallHistory ? "Hide Call History" : "Show Call History" }
+            </button>
+            <button
+              onClick={() => deleteEmployee(selectedEmployee._id)}
+              className="bg-red-600 text-white px-4 py-2 rounded"
+            >
+              {loadingDelete === selectedEmployee._id ? (
+                <AiOutlineLoading3Quarters className="animate-spin" />
+              ) : (
+                "Delete Employee"
+              )}
+            </button>
+          </div>
+        </div>
+
+        {showCallHistory && <div className="rounded-xl bg-white p-6 mt-5 border h-[45vh]" > hello</div>}
+      </>
+    )
+  }
+
+  /* ================= EMPLOYEE LIST VIEW ================= */
 
   return (
     <div>
       {/* HEADER */}
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex justify-center items-center gap-5">
+        <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold">Employees</h2>
-          <span onClick={refresh} className="p-2 rounded bg-gray-300 hover:cursor-pointer hover:bg-gray-400 transition-all ">
+          <span
+            onClick={fetchEmployees}
+            className="p-2 rounded bg-gray-200 hover:bg-gray-300 cursor-pointer"
+          >
             <FiRefreshCw />
           </span>
         </div>
 
+        {/* CREATE EMPLOYEE */}
         <Dialog.Root>
           <Dialog.Trigger asChild>
-            <button className="rounded bg-black px-4 py-2 text-sm text-white">
+            <button className="bg-black text-white px-4 py-2 rounded">
               + Create Employee
             </button>
           </Dialog.Trigger>
 
           <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 bg-black/50" />
-
-            <Dialog.Content className="fixed left-1/2 top-1/2 w-[90vw] max-w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow focus:outline-none">
-              <Dialog.Title className="mb-4 text-lg font-semibold">
-                Add New Employee
+            <Dialog.Overlay className="fixed inset-0 bg-black/40" />
+            <Dialog.Content className="fixed left-1/2 top-1/2 w-[90vw] max-w-[450px] -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded">
+              <Dialog.Title className="text-lg font-semibold mb-4">
+                Add Employee
               </Dialog.Title>
 
-              {/* NAME */}
-              <div className="mb-4 flex items-center gap-4">
-                <label className="w-[130px] text-sm">Name</label>
+              {Object.keys(employeeData).map((field) => (
                 <input
-                  name="name"
-                  type="text"
-                  value={employeeData.name}
+                  key={field}
+                  name={field}
+                  placeholder={field}
+                  value={(employeeData as any)[field]}
                   onChange={handleChange}
-                  className="h-9 w-full rounded border px-3 text-sm outline-none focus:ring-2 focus:ring-black"
+                  type={
+                    field.includes("password")
+                      ? "password"
+                      : field === "dateOfBirth"
+                        ? "date"
+                        : "text"
+                  }
+                  className="w-full border rounded px-3 py-2 mb-3 text-sm"
                 />
-              </div>
+              ))}
 
-              {/* EMAIL */}
-              <div className="mb-4 flex items-center gap-4">
-                <label className="w-[130px] text-sm">Email</label>
-                <input
-                  name="email"
-                  type="email"
-                  value={employeeData.email}
-                  onChange={handleChange}
-                  className="h-9 w-full rounded border px-3 text-sm outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              {/* PHONE */}
-              <div className="mb-4 flex items-center gap-4">
-                <label className="w-[130px] text-sm">Phone Number</label>
-                <input
-                  name="phoneNumber"
-                  type="tel"
-                  value={employeeData.phoneNumber}
-                  onChange={handleChange}
-                  className="h-9 w-full rounded border px-3 text-sm outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              {/* DOB */}
-              <div className="mb-4 flex items-center gap-4">
-                <label className="w-[130px] text-sm">Date of Birth</label>
-                <input
-                  name="dateOfBirth"
-                  type="date"
-                  value={employeeData.dateOfBirth}
-                  onChange={handleChange}
-                  className="h-9 w-full rounded border px-3 text-sm outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              {/* PASSWORD */}
-              <div className="mb-4 flex items-center gap-4">
-                <label className="w-[130px] text-sm">Password</label>
-                <input
-                  name="password"
-                  type="password"
-                  value={employeeData.password}
-                  onChange={handleChange}
-                  className="h-9 w-full rounded border px-3 text-sm outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              {/* CONFIRM PASSWORD */}
-              <div className="mb-6 flex items-center gap-4">
-                <label className="w-[130px] text-sm">
-                  Confirm Password
-                </label>
-                <input
-                  name="confirmPassword"
-                  type="password"
-                  value={employeeData.confirmPassword}
-                  onChange={handleChange}
-                  className="h-9 w-full rounded border px-3 text-sm outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              {/* ACTIONS */}
               <div className="flex justify-end gap-3">
                 <Dialog.Close asChild>
-                  <button className="rounded border px-4 py-2 text-sm">
-                    Cancel
-                  </button>
+                  <button className="border px-4 py-2 rounded">Cancel</button>
                 </Dialog.Close>
-
                 <Dialog.Close asChild>
-                  <button onClick={handleSubmit} className="rounded bg-black px-4 py-2 text-sm text-white">
+                  <button
+                    onClick={handleSubmit}
+                    className="bg-black text-white px-4 py-2 rounded"
+                  >
                     Save
                   </button>
                 </Dialog.Close>
               </div>
 
-              {/* CLOSE ICON */}
               <Dialog.Close asChild>
-                <button className="absolute right-3 top-3 text-gray-500 hover:text-black">
+                <button className="absolute top-3 right-3">
                   <Cross2Icon />
                 </button>
               </Dialog.Close>
@@ -220,81 +229,55 @@ const EmployeeTab = () => {
         </Dialog.Root>
       </div>
 
-      {/* TABLE PLACEHOLDER */}
-      <div className="rounded-xl border border-gray-200 bg-white">
-        {allEmployees.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
-              <span className="text-lg">👤</span>
-            </div>
-            <p className="text-sm font-medium text-gray-700">
-              No employees found
-            </p>
-            <p className="mt-1 text-xs text-gray-500">
-              Click “Create Employee” to add your first employee.
-            </p>
-          </div>
-        ) : (
-          <div className="rounded overflow-hidden">
-            {/* TABLE HEADER */}
-            <div className="grid grid-cols-5 border-b bg-gray-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 text-center rounded">
-              <div>Name</div>
-              <div>Email</div>
-              <div>Phone</div>
-              <div>Total Calls</div>
-              <div className="text-right">Actions</div>
-            </div>
+      {/* TABLE */}
+      <div className="rounded-xl border bg-white">
+        <div className="grid grid-cols-5 bg-gray-50 px-4 py-3 text-sm font-semibold">
+          <div>Name</div>
+          <div>Email</div>
+          <div>Phone</div>
+          <div>Total Calls</div>
+          <div className="text-right">Actions</div>
+        </div>
 
-            {/* TABLE ROWS */}
-            {allEmployees.map((emp: any, index: number) => (
-              <div
-                key={index}
-                className="grid grid-cols-5 items-center text-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+        {allEmployees.map((emp) => (
+          <div
+            key={emp._id}
+            className="grid grid-cols-5 px-4 py-3 text-sm items-center hover:bg-gray-50"
+          >
+            <div className="font-medium">{emp.name}</div>
+            <div>{emp.email}</div>
+            <div>{emp.phoneNumber}</div>
+            <div>{emp.totalCalls?.length || 0}</div>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setSelectedEmployee(emp)}
+                className="bg-black text-white px-3 py-1 rounded"
               >
-                {/* NAME */}
-                <div className="font-medium text-gray-900 uppercase">
-                  {emp.name}
-                </div>
-
-                {/* EMAIL */}
-                <div className="truncate">{emp.email}</div>
-
-                {/* PHONE */}
-                <div>{emp.phoneNumber}</div>
-
-                {/* DOB */}
-                {/* <div className="text-gray-500">
-                  {emp.dateOfBirth
-                    ? new Date(emp.dateOfBirth).toLocaleDateString()
-                    : "—"}
-                </div> */}
-
-                <div className="text-gray-500 text-center" >
-                  {emp.totalCalls.length}
-                </div>
-
-                {/* ACTIONS */}
-                <div className="flex justify-end gap-3">
-                  <button className="bg-blue-600 px-3 py-1 rounded font-medium text-white hover:cursor-pointer">
-                    View
-                  </button>
-                  {isLoading ?
-                    <button className="bg-red-600 text-white w-[3vw] rounded font-medium hover:cursor-pointer flex justify-center items-center">
-                      <AiOutlineLoading3Quarters size={18} className="animate-spin" />
-                    </button> :
-                    <button onClick={() => deleteEmployee({ empId: emp._id })} className="bg-red-600 text-white px-3 py-1 rounded font-medium hover:cursor-pointer">
-                      Delete
-                    </button>
-                  }
-                </div>
-              </div>
-            ))}
+                View
+              </button>
+              <button
+                onClick={() => deleteEmployee(emp._id)}
+                className="bg-red-600 text-white px-3 py-1 rounded"
+              >
+                {loadingDelete === emp._id ? (
+                  <AiOutlineLoading3Quarters className="animate-spin" />
+                ) : (
+                  "Delete"
+                )}
+              </button>
+            </div>
           </div>
-        )}
+        ))}
       </div>
-
     </div>
   )
 }
 
 export default EmployeeTab
+
+const Detail = ({ label, value }: { label: string; value: any }) => (
+  <div>
+    <p className="text-sm text-gray-500">{label}</p>
+    <p className="font-medium text-base">{value}</p>
+  </div>
+)

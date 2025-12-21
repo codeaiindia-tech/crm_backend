@@ -1,35 +1,31 @@
 import mongoose from "mongoose";
 
 type ConnectionStatus = {
-    isConnected?: number
-}
+  isConnected?: number;
+};
 
-const Connections : ConnectionStatus = {}
-
-const DB_URI = process.env.MONGODB_URI!
-
-if(!DB_URI){
-    console.error("DB link missing")
-}
+const Connections: ConnectionStatus = {};
 
 export const dbConnect = async () => {
+  const DB_URI = process.env.MONGODB_URI;
 
-    if(Connections.isConnected){
-        console.log("DB already Connected")
-        return;
-    }
+  if (!DB_URI) {
+    throw new Error("MONGODB_URI is not defined in environment variables");
+  }
 
-    try {
+  if (Connections.isConnected) {
+    console.log("DB already connected");
+    return;
+  }
 
-        const response = await mongoose.connect(`${DB_URI}`)
+  try {
+    const response = await mongoose.connect(DB_URI);
 
-        Connections.isConnected = response.connections[0].readyState
+    Connections.isConnected = response.connections[0].readyState;
 
-        console.log("Database connected successfully")
-
-    } catch (error : any) {
-        console.error("Error while connecting to database", error.message)
-        process.exit(1)
-    }
-
-}
+    console.log("Database connected successfully");
+  } catch (error: any) {
+    console.error("Error while connecting to database:", error.message);
+    process.exit(1);
+  }
+};

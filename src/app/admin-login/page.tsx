@@ -1,12 +1,18 @@
 "use client"
 import axios from 'axios';
+import { set } from 'mongoose';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
+import { RiLoader4Line } from 'react-icons/ri';
+import { TbLoader2 } from 'react-icons/tb';
 import { toast } from 'react-toastify';
 
 const page = () => {
 
   const route = useRouter()
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     identifier: "", // email or phone number
@@ -21,6 +27,9 @@ const page = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+
+    setIsLoading(true)
+
     e.preventDefault();
 
     console.log("Login Data:", formData);
@@ -34,12 +43,14 @@ const page = () => {
 
       toast.success(response.data.message)
 
+      setIsLoading(false)
+
       setTimeout(() => {
         route.push("/admin")
-      }, 3000);
-      
-    } catch (error:any) {
-      console.log(error.response.data.message)
+      }, 2000);
+
+    } catch (error: any) {
+      console.log(error)
 
       toast.error(error.response.data.message)
 
@@ -73,20 +84,32 @@ const page = () => {
             onChange={handleChange}
           />
 
-          <button
+          {isLoading ? <button
+            className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-900 transition flex justify-center items-center"
+          >
+            <TbLoader2 size={24} className='animate-spin transition-all' />
+          </button> : <button
             type="submit"
             className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-900 transition"
           >
             Login
-          </button>
+          </button>}
         </form>
 
-        <p className="text-sm text-center text-gray-600 mt-4">
+        {/* <p className="text-sm text-center text-gray-600 mt-4">
           Forgot password?{" "}
           <span className="text-black font-medium cursor-pointer hover:underline">
             Reset here
           </span>
+        </p> */}
+
+        <p className="text-sm text-center text-gray-600 mt-3">
+          New to this software?{" "}
+          <Link href="/admin-registration" className="text-black font-medium cursor-pointer hover:underline">
+            Register
+          </Link>
         </p>
+
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client"
 import axios from "axios";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
@@ -120,6 +121,12 @@ const Page = () => {
             Register Admin
           </button>
         </form>
+        <p className="text-sm text-center text-gray-600 mt-3">
+          Already Registered?{" "}
+          <Link href="/admin-login" className="text-black font-medium cursor-pointer hover:underline">
+            Login
+          </Link>
+        </p>
       </div>
     </div>
   );
