@@ -1,11 +1,21 @@
 import { dbConnect } from "@/db/dbConnect";
 import { Admin } from "@/models/admin.models";
 import User from "@/models/employee.models";
+import { getDataToken } from "@/utils/getDataToken";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
 
 export async function POST( request : NextRequest ){
+
+    const {adminId} = await getDataToken(request)
+
+    if(!adminId){
+        return NextResponse.json({
+            status: false,
+            message: "Unauthorized Request"
+        }, {status: 401})
+    }
 
     const { phoneNumber, newPassword, confirmNewPassword } = await request.json()
 
@@ -26,9 +36,9 @@ export async function POST( request : NextRequest ){
     try {
         await dbConnect();
 
-        const existingAdmin = await Admin.findOne( { phoneNumber } )
+        const existingUser = await User.findOne( { phoneNumber } )
 
-        if(!existingAdmin){
+        if(!existingUser){
             return NextResponse.json( {
                 status: false,
                 message: "Admin does not exist, please Register"
@@ -37,7 +47,7 @@ export async function POST( request : NextRequest ){
 
         const newHashedPassword = await bcrypt.hash(confirmNewPassword, 10)
 
-        const updatedAdminPassword = await Admin.findByIdAndUpdate( existingAdmin._id ,
+        const updatedAdminPassword = await User.findByIdAndUpdate( existingUser._id ,
             {
                 password: newHashedPassword
             },
@@ -53,7 +63,7 @@ export async function POST( request : NextRequest ){
             }, { status: 402 } )
         }
 
-        const updatedAdmin = await Admin.findByIdAndUpdate()
+        // const updatedAdmin = await Admin.findByIdAndUpdate()
 
         return NextResponse.json({ 
             status: true,

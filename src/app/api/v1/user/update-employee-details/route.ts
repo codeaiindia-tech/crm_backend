@@ -9,13 +9,6 @@ export async function POST(request:NextRequest){
 
     const { name, phoneNumber, email, newPassword } = await request.json()
 
-    // if(!name || !phoneNumber || !email){
-    //     return NextResponse.json({
-    //         status: false,
-    //         message: "Either of the field is missing"
-    //     }, { status: 401 })
-    // }
-
     const {searchParams} = new URL(request.url)
     const uId = searchParams.get("uId")
 

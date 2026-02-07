@@ -11,8 +11,9 @@ import EmployeeTab from "../components/tabs/EmployeeTab"
 import CallTab from "../components/tabs/CallTab"
 import SettingsTab from "../components/tabs/SettingTab"
 import ErrorPage from "../components/Error"
+import Profile from "../components/tabs/Profile"
 
-export type TabType = "overall" | "call" | "employee" | "settings"
+export type TabType = "overall" | "call" | "employee" | "settings" | "profile"
 
 type CallStatus = {
   missed: number
@@ -269,6 +270,7 @@ const AdminDashboardPage = () => {
                 <EmployeeTab />
               )}
               {activeTab === "settings" && <SettingsTab />}
+              { activeTab === "profile" && <Profile/> }
             </>
           ) : (
             <ErrorPage />

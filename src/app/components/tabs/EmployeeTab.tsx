@@ -7,13 +7,28 @@ import axios from "axios"
 import { toast } from "react-toastify"
 import { FiRefreshCw } from "react-icons/fi"
 import { AiOutlineLoading3Quarters } from "react-icons/ai"
-import bcrypt from "bcryptjs"
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 const EmployeeTab = () => {
   const [allEmployees, setAllEmployees] = React.useState<any[]>([])
   const [loadingDelete, setLoadingDelete] = React.useState<string | null>(null)
   const [selectedEmployee, setSelectedEmployee] = React.useState<any | null>(null)
   const [showCallHistory, setShowCallHistory] = React.useState<boolean>(false)
+  const [callHistory, setCallHistory] = React.useState([])
+  const [dataForChangePassword, setDataForChangePassword] = React.useState(
+    {
+      phoneNumber: "",
+      newPassword: "",
+      confirmNewPassword: ""
+    }
+  )
+
 
   const [employeeData, setEmployeeData] = React.useState({
     name: "",
@@ -69,6 +84,24 @@ const EmployeeTab = () => {
     }
   }
 
+
+
+  const fetchCallLog = async () => {
+    if (selectedEmployee) {
+      try {
+        const response = await axios.get(`/api/v1/user/get-all-calls-from-employee?uId=${selectedEmployee._id}`)
+
+        console.log("Response for call log from employee", response.data)
+
+        setCallHistory(response.data.data)
+
+      } catch (error: any) {
+        console.log("Error while fetching the call log from the employee", error)
+        console.log(error.response.data.message)
+      }
+    }
+  }
+
   /* ================= DELETE EMPLOYEE ================= */
 
   const deleteEmployee = async (empId: string) => {
@@ -87,11 +120,38 @@ const EmployeeTab = () => {
     }
   }
 
+
+  // change password api
+
+  const handleChangePassword = async () => {
+    console.log(dataForChangePassword)
+    try {
+      const response = await axios.post("/api/v1/user/change-password", dataForChangePassword)
+
+      console.log("RESPONSE DATA: ", response.data)
+
+      toast.success(response.data.message || "Process Completed" )
+
+    } catch (error: any) {
+      console.log("Error while API request", error)
+      toast.error(error.response.data.message)
+    }
+  }
+
+
+
+
   const handleCallHistory = () => {
     setShowCallHistory((prev) => !prev)
   }
 
-  // const password = await bcrypt.verify()
+  React.useEffect(() => {
+    if (showCallHistory && selectedEmployee?._id) {
+      fetchCallLog()
+    }
+  }, [showCallHistory, selectedEmployee])
+
+
 
   if (selectedEmployee) {
     return (
@@ -130,13 +190,56 @@ const EmployeeTab = () => {
               <p className="text-sm text-gray-500">Password</p>
 
               {/* introduce shadcn pop-up */}
-              <button className="px-2 py-1 rounded bg-black text-white hover:cursor-pointer" >Reset</button>
+              <Dialog.Root>
+                <DialogTrigger className="px-2 py-1 border bg-gray-100 mt-1 rounded hover:cursor-pointer " >Reset</DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Change Password?</DialogTitle>
+                    <DialogDescription>
+                      This action cannot be undone. This will permanently change your password from our servers.
+                    </DialogDescription>
+                    <div className=" p-3" >
+                      <div className="w-full flex flex-col justify-center items-center gap-y-5">
+                        <div className="w-full flex justify-between px-5 items-center ">
+                          <label htmlFor="phoneNumber">Phone Number</label>
+                          <input
+                            type="text"
+                            className="px-4 py-2 border border-gray-300 outline-none rounded w-1/2"
+                            value={dataForChangePassword.phoneNumber}
+                            onChange={(e) => setDataForChangePassword({ ...dataForChangePassword, phoneNumber: e.target.value })}
+                          />
+                        </div>
+                        <div className="w-full flex justify-between px-5 items-center">
+                          <label htmlFor="newPassword">New Password</label>
+                          <input
+                            type="password"
+                            className="px-4 py-2 border border-gray-300 outline-none rounded w-1/2"
+                            value={dataForChangePassword.newPassword}
+                            onChange={(e) => setDataForChangePassword({ ...dataForChangePassword, newPassword: e.target.value })}
+                          />
+                        </div>
+                        <div className="w-full flex justify-between px-5 items-center">
+                          <label htmlFor="confirmPassword">Confirm Password</label>
+                          <input type="text" className="px-4 py-2 border border-gray-300 outline-none rounded w-1/2"
+                            value={dataForChangePassword.confirmNewPassword}
+                            onChange={(e) => setDataForChangePassword({ ...dataForChangePassword, confirmNewPassword: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex gap-x-5 justify-end ">
+                      <button onClick={handleChangePassword} className="px-4 py-2 bg-black text-white rounded hover:cursor-pointer" >Save</button>
+                      <Dialog.Close className="px-4 py-2 border-gray-500 border rounded" >Cancel</Dialog.Close>
+                    </div>
+                  </DialogHeader>
+                </DialogContent>
+              </Dialog.Root>
             </div>
           </div>
 
           <div className="mt-8 flex gap-4">
-            <button onClick={ handleCallHistory } className="bg-black text-white px-4 py-2 rounded">
-              { showCallHistory ? "Hide Call History" : "Show Call History" }
+            <button onClick={handleCallHistory} className="bg-black text-white px-4 py-2 rounded">
+              {showCallHistory ? "Hide Call History" : "Show Call History"}
             </button>
             <button
               onClick={() => deleteEmployee(selectedEmployee._id)}
@@ -151,7 +254,44 @@ const EmployeeTab = () => {
           </div>
         </div>
 
-        {showCallHistory && <div className="rounded-xl bg-white p-6 mt-5 border h-[45vh]" > hello</div>}
+        {showCallHistory && (
+          <div className="rounded-xl bg-white border mt-5 overflow-hidden">
+
+            {/* Header */}
+            <div className="grid grid-cols-4 border-b px-5 py-3 text-sm font-semibold">
+              <div>Name</div>
+              <div>Phone</div>
+              <div>Created At</div>
+              <div>Interested</div>
+            </div>
+
+            {/* Rows */}
+            <div className="max-h-[50vh] overflow-y-auto">
+              {callHistory.length === 0 ? (
+                <div className="px-5 py-10 text-center text-sm text-gray-500">
+                  No call history found
+                </div>
+              ) : (
+                callHistory.map((call: any) => (
+                  <div
+                    key={call._id}
+                    className="grid grid-cols-4 border-b px-5 py-3 text-sm"
+                  >
+                    <div className="truncate">{call.leadName}</div>
+                    <div>{call.leadPhoneNumber}</div>
+                    <div>
+                      {new Date(call.createdAt).toLocaleString()}
+                    </div>
+                    <div className="ml-8">{call.interested ? "Yes" : "No"}</div>
+                  </div>
+                ))
+              )}
+            </div>
+
+          </div>
+        )}
+
+
       </>
     )
   }

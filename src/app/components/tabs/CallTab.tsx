@@ -55,7 +55,7 @@ const CallTab = ({ allCalls, incomingCalls, outgoingCalls }: { allCalls: Array<a
         </select>
       </div>
 
-      <div className="bg-white border rounded-xl p-4 text-sm">
+      <div className="bg-white border rounded-xl p-4 text-sm h-[70vh] overflow-y-scroll">
         {all.length > 0 ? (
           <>
             {/* Header */}
@@ -68,7 +68,7 @@ const CallTab = ({ allCalls, incomingCalls, outgoingCalls }: { allCalls: Array<a
             </div>
 
             {/* Rows */}
-            <div className="space-y-2">
+            <div className="space-y-2 ">
               {all.map((call) => (
                 <div
                   key={call._id}
